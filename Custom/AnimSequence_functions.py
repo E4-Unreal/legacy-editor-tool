@@ -50,22 +50,32 @@ class AnimSequence:
         self.result_path = result_path
         self.result_name = result_name
 
-    def CheckNone(self):
-        if self.asset_path == "":
-            print("asset_path is None")
-            quit()
-        
-        if self.json_path == "":
-            self.json_path = unreal.Paths.get_path(self.asset_path)
+    def CheckNone(self, option = 0):
 
-        if self.json_name == "":
-            self.json_name = unreal.Paths.get_base_filename(self.asset_path) + ".json"
+        if option == 0:
+            if self.asset_path == "":
+                print("asset_path is None")
+                quit()
+            
+            if self.json_path == "":
+                self.json_path = unreal.Paths.get_path(self.asset_path)
+
+            if self.json_name == "":
+                self.json_name = unreal.Paths.get_base_filename(self.asset_path) + ".json"
+
         else:
-            self.json_name += ".json"
+            if self.asset_path == "" or self.json_path == "" or self.json_name == "":
+                print("One of asset_path/json_path/json_name is None")
+
+            if self.result_path == "":
+                self.result_path = unreal.Paths.get_path(self.asset_path)
+            
+            if self.result_name == "":
+                self.result_name = self.json_name
             
     def ConvertJsonPath(self):
         json_path = self.json_path.replace("/Game/", unreal.Paths.project_content_dir())
-        json_file_path = json_path + "/" + self.json_name
+        json_file_path = json_path + "/" + self.json_name + ".json"
         return json_file_path
 
     def CurvesToJson(self):
@@ -90,7 +100,7 @@ class AnimSequence:
             print("json 저장 실패")
 
     def JsonToCurves(self):
-        self.CheckNone()
+        self.CheckNone(option=1)
         json_file_path = self.ConvertJsonPath()
 
         # JSON 파일에서 커브 데이터 읽어오기

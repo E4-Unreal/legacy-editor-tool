@@ -22,7 +22,6 @@ def decompose_transform(transform):
 
 def compose_transform(location, rotation, scale):
     rotation = convert_rotation_for_transform(rotation)
-    print(rotation)
     return unreal.Transform(location, rotation, scale)
 
 # unreal.Transform.rotation.euler() = unreal.Vector(x,y,z)

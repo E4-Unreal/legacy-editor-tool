@@ -1,6 +1,5 @@
 import sys
 
-# Custom 폴더 경로
-module_path = "경로/Custom"
+module_path = "D:/Unreal Projects/Python/Custom"
 if not module_path in sys.path:
     sys.path.append(module_path)

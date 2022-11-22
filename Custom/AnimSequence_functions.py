@@ -98,7 +98,7 @@ class AnimSequence:
         except:
             print("json 저장 실패")
 
-    def JsonToCurves(self):
+    def LoadJson(self, target_asset = None):
         self.CheckNone(option=1)
         json_file_path = self.ConvertJsonPath()
 
@@ -110,8 +110,11 @@ class AnimSequence:
             print(json_file_path + "에서 json 로드에 실패하였습니다")
             quit()
 
-        # 원본 시퀀스 로드
-        asset = uf.get_asset(self.asset_path)
+        # 타깃 어셋 설정 확인
+        if target_asset == None:
+            asset = uf.get_asset(self.asset_path)
+        else:
+            asset = target_asset
 
         # 시퀀스 샘플링 프레임 수 체크
         sampled_frames = asset.get_editor_property('number_of_sampled_frames')
@@ -120,20 +123,43 @@ class AnimSequence:
             if track['frames'][-1] > sampled_frames:
                 print(track['bone'] + " 트랙의 목표 프레임이 시퀀스 샘플링 프레임 수 보다 큽니다")
                 quit()
+        return asset, tracks
 
-        # 시퀀스 복제
-        duplicated_asset = uf.duplicate_asset(self.result_name, self.result_path, asset)
+    def JsonToCurves(self, duplicate = True, target_asset = None):
+        asset, tracks = self.LoadJson(target_asset = target_asset)
 
-        # 시퀀스 복제본에 커브 데이터 추가
+        # 시퀀스 복제 여부 확인
+        if duplicate == True:
+            asset = uf.duplicate_asset(self.result_name, self.result_path, asset)
+
+        # 타깃 시퀀스에 커브 데이터 추가
         for track in tracks:
-            unreal.AnimationLibrary.add_curve(duplicated_asset, track['bone'], unreal.RawCurveTrackTypes.RCT_TRANSFORM)
-
             # 수동으로 Json 작성할 경우 프레임을 기준으로 키를 설정하기 때문에 time으로 계산 필요
             if len(track['times']) == 0:
                 for frame in track['frames']:
-                    track['times'].append(unreal.AnimationLibrary.get_time_at_frame(duplicated_asset, frame))
+                    track['times'].append(unreal.AnimationLibrary.get_time_at_frame(asset, frame))
+
+            unreal.AnimationLibrary.add_curve(asset, track['bone'], unreal.RawCurveTrackTypes.RCT_TRANSFORM)
 
             track['transforms'] = []
             for i in range(0, len(track['times'])):
                 track['transforms'].append(uf.compose_transform(track['locations'][i], track['rotations'][i], track['scales'][i]))
-            unreal.AnimationLibrary.add_transformation_curve_keys(duplicated_asset, track['bone'], track['times'],track['transforms'])
+            unreal.AnimationLibrary.add_transformation_curve_keys(asset, track['bone'], track['times'],track['transforms'])
+    
+    # 미완성
+    def JsonToNotify(self, duplicate = True, target_asset = None):
+        asset, tracks = self.LoadJson(target_asset = target_asset)
+        
+        # 시퀀스 복제 여부 확인
+        if duplicate == True:
+            asset = uf.duplicate_asset(self.result_name, self.result_path, asset)
+        
+        for track in tracks:
+            # 수동으로 Json 작성할 경우 프레임을 기준으로 키를 설정하기 때문에 time으로 계산 필요
+            if len(track['times']) == 0:
+                for frame in track['frames']:
+                    track['times'].append(unreal.AnimationLibrary.get_time_at_frame(asset, frame))
+
+            unreal.AnimationLibrary.add_animation_notify_track(asset, track['name'])
+            for i in range(0, len(track['frames'])):
+                unreal.AnimationLibrary.add_animation_notify_event_object(asset, track['times'][i])

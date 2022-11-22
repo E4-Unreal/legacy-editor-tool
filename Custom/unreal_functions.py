@@ -38,3 +38,9 @@ def convert_rotation_for_transform(rotation):
     else:
         print("convert_rotation_for_transform(rotation): rotation의 길이가 3이 아닙니다")
         quit()
+
+def round_list(list, DecimalPlace):
+    new_list = []
+    for e in list:
+        new_list.append(round(e, DecimalPlace))
+    return new_list

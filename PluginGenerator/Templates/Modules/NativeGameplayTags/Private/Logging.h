@@ -1,5 +1,7 @@
 // Copyright (C) Developed by Pask, Published by Dark Tower Interactive SRL 2021. All Rights Reserved. 
 
-#include "Logging.h"
+#pragma once
 
-DEFINE_LOG_CATEGORY(LogTemplate);
+#include "CoreMinimal.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogMODULE_NAME, Log, All);
